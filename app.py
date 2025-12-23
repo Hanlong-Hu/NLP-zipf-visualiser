@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for
-from count import count_words
+from services.count import count_words
 import os 
 
 app = Flask(__name__)
