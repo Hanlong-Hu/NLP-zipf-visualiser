@@ -8,15 +8,37 @@
     
     <label class="options-label"> Text Analysis Options </label>
     <div class="options">
-      <label>
-        <input type="checkbox" name="case_sensitive"> Case Sensitive
-      </label>
-      <label>
-        <input type="checkbox" name="remove_stop_words"> Remove Stop Words
-      </label>
-      <div style="grid-column: 1 / -1;">
-        <label for="words_to_exclude" style="margin-bottom: 0.25rem;">Words to exclude (comma separated)</label>
-        <input type="text" id="words_to_exclude" name="words_to_exclude" placeholder="e.g. apple, banana">
+      <div class="toggle-group">
+        <label class="switch">
+          <input type="checkbox" name="remove_punctuation" {{ 'checked' if options.remove_punctuation }}>
+          <span class="slider round"></span>
+        </label>
+        <span>Remove Punctuation</span>
+      </div>
+      <div class="toggle-group">
+        <label class="switch">
+          <input type="checkbox" name="filter_alpha" {{ 'checked' if options.filter_alpha }}>
+          <span class="slider round"></span>
+        </label>
+        <span>Filter Non-Alphabetic</span>
+      </div>
+      <div class="toggle-group">
+        <label class="switch">
+          <input type="checkbox" name="case_sensitive" {{ 'checked' if options.case_sensitive }}>
+          <span class="slider round"></span>
+        </label>
+        <span>Case Sensitive</span>
+      </div>
+      <div class="toggle-group">
+        <label class="switch">
+          <input type="checkbox" name="remove_stop_words" {{ 'checked' if options.remove_stop_words }}>
+          <span class="slider round"></span>
+        </label>
+        <span>Remove Stop Words</span>
+      </div>
+      <div style="grid-column: 1 / -1; margin-top: 0.5rem;">
+        <label for="words_to_exclude" style="display: block; margin-bottom: 0.25rem; font-weight: normal;">Words to exclude (comma separated)</label>
+        <input type="text" id="words_to_exclude" name="words_to_exclude" placeholder="e.g. apple, banana" value="{{ options.words_to_exclude }}">
       </div>
     </div>
 
@@ -37,8 +59,98 @@
               <span class="metric-label">Unique Words</span>
               <span class="metric-value">{{ unique_word_count }}</span>
           </div>
+          <div class="metric-card">
+              <span class="metric-label">Total Characters</span>
+              <span class="metric-value">{{ char_count }}</span>
+          </div>
+          <div class="metric-card">
+              <span class="metric-label">Characters (no spaces)</span>
+              <span class="metric-value">{{ char_count_no_spaces }}</span>
+          </div>
+      </div>
+
+      <div class="visualization-container">
+          <div class="viz-header">
+              <h3>Token Frequency</h3>
+              <div class="chart-toggle">
+                  <span class="toggle-label">Before filtering</span>
+                  <label class="switch tiny">
+                      <input type="checkbox" id="chartDataToggle">
+                      <span class="slider round"></span>
+                  </label>
+                  <span class="toggle-label">After filtering</span>
+              </div>
+          </div>
+          <div class="chart-wrapper">
+              <canvas id="tokenChart"></canvas>
+          </div>
       </div>
   </div>
+
+  <script>
+      const rawChartData = {{ chart_data | tojson | safe }};
+      const ctx = document.getElementById('tokenChart').getContext('2d');
+      
+      const chartCanvas = document.getElementById('tokenChart');
+      
+      let currentData = rawChartData.after;
+
+      function updateChartWidth(data) {
+          // Adjust width: roughly 50px per bar, but at least 100% of container
+          const minBarWidth = 50;
+          const calculatedWidth = data.labels.length * minBarWidth;
+          chartCanvas.parentElement.style.width = '100%'; 
+          chartCanvas.style.width = Math.max(calculatedWidth, chartCanvas.parentElement.offsetWidth) + 'px';
+      }
+      
+      const tokenChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+              labels: currentData.labels,
+              datasets: [{
+                  label: 'Frequency',
+                  data: currentData.values,
+                  backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                  borderColor: 'rgba(52, 152, 219, 1)',
+                  borderWidth: 1,
+                  borderRadius: 4
+              }]
+          },
+          options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                  legend: { display: false }
+              },
+              scales: {
+                  y: {
+                      beginAtZero: true,
+                      grid: { color: 'rgba(0, 0, 0, 0.05)' }
+                  },
+                  x: {
+                      grid: { display: false }
+                  }
+              }
+          }
+      });
+
+      function refreshChart(newData) {
+          updateChartWidth(newData);
+          tokenChart.data.labels = newData.labels;
+          tokenChart.data.datasets[0].data = newData.values;
+          tokenChart.update();
+      }
+
+      document.getElementById('chartDataToggle').addEventListener('change', function(e) {
+          const isAfter = e.target.checked;
+          const newData = isAfter ? rawChartData.after : rawChartData.before;
+          refreshChart(newData);
+      });
+
+      // Initial call
+      updateChartWidth(currentData);
+      document.getElementById('chartDataToggle').checked = true;
+  </script>
   {% endif %}
 </div>
 

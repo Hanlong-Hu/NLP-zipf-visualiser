@@ -1,11 +1,25 @@
 import re
-
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+nltk.download('punkt')
+nltk.download('punkt_tab')
+nltk.download('stopwords')
 # Steps for the text analysis (filtering, cleaning, etc.)
 # Each step should ideally take a list of words and return a list of words.
 
+import string
+
 def tokenize_step(text):
-    """Converts raw text into a list of words."""
-    return text.split()
+    """Converts raw text into a list of tokens using NLTK."""
+    return word_tokenize(text)
+
+def remove_punctuation_step(words):
+    """Removes punctuation from each word in the list."""
+    table = str.maketrans('', '', string.punctuation)
+    stripped = [w.translate(table) for w in words]
+    # Filter out empty strings that were just punctuation
+    return [w for w in stripped if w]
 
 def lowercase_step(words):
     """Converts all words to lowercase."""
@@ -24,8 +38,8 @@ def filter_alphanumeric_step(words):
     return [w for w in cleaned if w]
 
 def remove_stop_words_step(words):
-    """Removes common stop words."""
-    stop_words = {"the", "is", "at", "which", "on", "a", "an", "and", "it"}
+    """Removes common english stop words (based on nltk library)"""
+    stop_words = set(stopwords.words('english'))
     return [w for w in words if w.lower() not in stop_words]
 
 def create_exclusion_step(words_to_exclude):

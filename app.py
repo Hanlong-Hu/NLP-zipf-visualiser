@@ -1,7 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
 from services.processor import run_pipeline
 from services.steps import *
-from services.metrics import get_word_count, get_unique_word_count
+from services.metrics import (
+    get_word_count, 
+    get_unique_word_count, 
+    get_character_count, 
+    get_character_count_no_spaces
+)
 import os 
 
 app = Flask(__name__)
@@ -76,13 +81,14 @@ def post():
         # Get metrics
         word_count = get_word_count(processed_words)
         unique_word_count = get_unique_word_count(processed_words)
+        char_count = get_character_count(content)
+        char_count_no_spaces = get_character_count_no_spaces(content)
         
-        # Prepare frequency data for comparison
-        # We'll provide 'before_stop_words' and 'final' as the primary comparison points
+        # Prepare frequency data for comparison (Top 50 for performance and readability)
         from services.metrics import get_most_frequent_words
         chart_data = {
-            'before': get_most_frequent_words(snapshots.get('before_stop_words', [])),
-            'after': get_most_frequent_words(snapshots.get('final', []))
+            'before': get_most_frequent_words(snapshots.get('before_stop_words', []), n=50),
+            'after': get_most_frequent_words(snapshots.get('final', []), n=50)
         }
         
         
@@ -93,6 +99,8 @@ def post():
                                options=options,
                                word_count=word_count,
                                unique_word_count=unique_word_count,
+                               char_count=char_count,
+                               char_count_no_spaces=char_count_no_spaces,
                                chart_data=chart_data)
         
         # return redirect(url_for('post'))
