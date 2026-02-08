@@ -1,7 +1,27 @@
 {% extends 'layout.html' %} {% block content %}
 <div class="container">
-  <h1>Text Analyzer</h1>
+  <h1>Text Input</h1>
   <form action="{{ url_for('post') }}" method="POST">
+    {% if error %}
+    <div class="error-message" style="color: #c00; margin-bottom: 1rem;">
+    {{ error }}
+    </div>
+    {% endif %}
+    <div>
+        <select name="source-select" id="source-select">
+            <option value="">--Choose text source--</option>
+            <option value="Paste" {{ 'selected' if source == 'Paste' }}>Paste</option>
+            <option value="Gutenberg" {{ 'selected' if source == 'Gutenberg' }}>Gutenberg</option>
+            <option value="Wikipedia" {{ 'selected' if source == 'Wikipedia' }}>Wikipedia</option>
+        </select>
+    </div>
+    <div id = "Gutenberg-id" style="display: none; margin-top: 10px;">
+        <input type="text" name="gutenberg_id" placeholder="Enter Project Gutenberg ID (e.g., 1234)"> 
+    </div>
+    <div id="Wikipedia-id" style="display: none; margin-top: 10px;">
+        <input type="text" name="wiki_query" placeholder="Enter Wikipedia Article Title">
+    </div>
+
     <div>
       <textarea name="content" placeholder="Paste your text here...">{{ content }}</textarea>
     </div>
@@ -46,7 +66,36 @@
       <input type="submit" class="btn" value="Analyze Text" />
     </div>
   </form>
+  <script>
+    const sourceSelect = document.getElementById("source-select");
+    const gutenbergDiv = document.getElementById("Gutenberg-id");
+    const wikiDiv = document.getElementById("Wikipedia-id");
+    const contentTextarea = document.querySelector("textarea[name='content']");
 
+    function updateSourceFields(value) {
+        gutenbergDiv.style.display = 'none';
+        wikiDiv.style.display = 'none';
+        contentTextarea.style.display = 'none';
+
+        if (value === 'Gutenberg') {
+            gutenbergDiv.style.display = 'block';
+        } else if (value === 'Wikipedia') {
+            wikiDiv.style.display = 'block';
+        } else if (value === 'Paste') {
+            contentTextarea.style.display = 'block';
+        } else {
+            // Default: show textarea for pasting
+            contentTextarea.style.display = 'block';
+        }
+    }
+
+    sourceSelect.addEventListener('change', function() {
+        updateSourceFields(this.value);
+    });
+
+    // On page load, sync visibility with the current select value
+    updateSourceFields(sourceSelect.value);
+  </script>
   {% if word_count is defined %}
   <div class="result">
       <h2>Analysis Results</h2>

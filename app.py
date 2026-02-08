@@ -1,4 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request
+import requests
+from services.fetchers import fetch_gutenberg, fetch_wiki
 from services.processor import run_pipeline
 from services.steps import *
 from services.metrics import (
@@ -36,9 +38,9 @@ def post():
         }
         return render_template('post.html', name = name, title = name, options=options)
     if request.method == 'POST':
-        content = request.form['content']
+        source = request.form.get('source-select')
         
-        # Capture options for maintaining state
+        # Capture options early so they're available in error handlers
         options = {
             'remove_punctuation': request.form.get('remove_punctuation') == 'on',
             'filter_alpha': request.form.get('filter_alpha') == 'on',
@@ -46,6 +48,31 @@ def post():
             'remove_stop_words': request.form.get('remove_stop_words') == 'on',
             'words_to_exclude': request.form.get('words_to_exclude', '')
         }
+        
+        content = ""
+        
+        if source == 'Gutenberg':
+            try:
+                book_id = request.form.get('gutenberg_id')
+                content = fetch_gutenberg(bookid=book_id)
+            except requests.HTTPError as e:
+                error_message = f"Book not found: {e.response.status_code} {e.response.reason}"
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+            except requests.RequestException as e:
+                error_message = "Network error. Please try again."
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+        elif source == 'Wikipedia':
+            try:
+                query = request.form.get('wiki_query')
+                content = fetch_wiki(title=query)
+            except ValueError as e:
+                error_message = str(e)
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+            except requests.RequestException as e:
+                error_message = "Network error fetching Wikipedia article. Please try again."
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+        else:
+            content = request.form.get('content')
 
         # Build the pipeline based on toggles
         # Each step is now a tuple: (snapshot_name, function)
@@ -100,6 +127,7 @@ def post():
                                name=name, 
                                title=name, 
                                content=content, 
+                               source=source,
                                options=options,
                                word_count=word_count,
                                unique_word_count=unique_word_count,
@@ -201,5 +229,5 @@ def examples():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 5000))
+    port = int(os.environ.get('PORT', 1234))
     app.run(host='0.0.0.0', port=port)

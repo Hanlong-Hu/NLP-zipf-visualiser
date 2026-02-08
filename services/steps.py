@@ -2,7 +2,7 @@ import re
 import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
-nltk.download('punkt')
+nltk.download('punkt_tab')
 nltk.download('stopwords')
 # Steps for the text analysis (filtering, cleaning, etc.)
 # Each step should ideally take a list of words and return a list of words.
