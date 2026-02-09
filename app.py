@@ -36,7 +36,7 @@ def post():
             'remove_stop_words': False,
             'words_to_exclude': ''
         }
-        return render_template('post.html', name = name, title = name, options=options)
+        return render_template('post.html', name = name, title = name, options=options, gutenberg_id='', wiki_query='')
     if request.method == 'POST':
         source = request.form.get('source-select')
         
@@ -50,27 +50,28 @@ def post():
         }
         
         content = ""
-        
+        gutenberg_id = request.form.get('gutenberg_id', '')
+        wiki_query = request.form.get('wiki_query', '')
         if source == 'Gutenberg':
             try:
                 book_id = request.form.get('gutenberg_id')
                 content = fetch_gutenberg(bookid=book_id)
             except requests.HTTPError as e:
                 error_message = f"Book not found: {e.response.status_code} {e.response.reason}"
-                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message, gutenberg_id=gutenberg_id)
             except requests.RequestException as e:
                 error_message = "Network error. Please try again."
-                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message,gutenberg_id=gutenberg_id) 
         elif source == 'Wikipedia':
             try:
                 query = request.form.get('wiki_query')
                 content = fetch_wiki(title=query)
             except ValueError as e:
                 error_message = str(e)
-                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message, wiki_query=wiki_query)
             except requests.RequestException as e:
                 error_message = "Network error fetching Wikipedia article. Please try again."
-                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message)
+                return render_template('post.html', name=name, title=name, options=options, source=source, error=error_message, wiki_query=wiki_query)
         else:
             content = request.form.get('content')
 

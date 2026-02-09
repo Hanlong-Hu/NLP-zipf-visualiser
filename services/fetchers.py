@@ -10,6 +10,7 @@ def fetch_gutenberg(bookid : int):
 def fetch_wiki(title: str) -> str:
     """Fetch the plain-text extract of a Wikipedia article by title."""
     url = "https://en.wikipedia.org/w/api.php"
+    headers = {'User-Agent' : 'MyZipfVisualizerBot/1.0'}
     params = {
         "action": "query",
         "titles": title,
@@ -17,7 +18,7 @@ def fetch_wiki(title: str) -> str:
         "explaintext": True,
         "format": "json",
     }
-    response = requests.get(url, params=params)
+    response = requests.get(url, params=params, headers=headers)
     response.raise_for_status()
 
     data = response.json()
@@ -30,3 +31,12 @@ def fetch_wiki(title: str) -> str:
         return page.get("extract", "")
 
     raise ValueError(f"Wikipedia article not found: '{title}'")
+
+
+if __name__ == "__main__":
+    try:
+        content = fetch_wiki("API")
+        print(content[:500])
+    except Exception as e:
+        print(f"error: {e}")
+
