@@ -22,7 +22,7 @@ The application is built with a modular architecture:
 1. **Clone the repository:**
    ```bash
    git clone <repository-url>
-   cd flask_project
+   cd NLP-zipf-visualiser
    ```
 
 2. **Set up a virtual environment:**
