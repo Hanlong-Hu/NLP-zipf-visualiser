@@ -1,0 +1,16 @@
+# official python image 
+FROM python:3.12-slim
+
+#working directory
+WORKDIR /app
+
+#copy project files into container
+COPY . .
+
+RUN pip install -r requirements.txt
+
+# expose port 5000 for Flask
+EXPOSE 5000
+
+# command to run app
+CMD ["python", "app.py"]

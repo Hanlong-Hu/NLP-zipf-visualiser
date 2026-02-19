@@ -111,9 +111,7 @@ def fetch_content(source, form):
     return form.get('content', ''), None
 
 
-# ---------------------------------------------------------------------------
 # Routes
-# ---------------------------------------------------------------------------
 
 @app.route('/')
 def home():
@@ -135,7 +133,6 @@ def post():
                                options=DEFAULT_OPTIONS,
                                gutenberg_id='', wiki_query='')
 
-    # -- POST -----------------------------------------------------------------
     source = request.form.get('source-select')
     options = parse_options(request.form)
     gutenberg_id = request.form.get('gutenberg_id', '')
@@ -189,5 +186,5 @@ def examples():
 
 
 if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 1234))
-    app.run(host='0.0.0.0', port=port)
+    # port = int(os.environ.get('PORT', 1234))
+    app.run(host='0.0.0.0', port=5000, debug=True)
