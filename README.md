@@ -11,7 +11,10 @@ The application is built with a modular architecture:
 - **Service Layer:** Separates metrics calculation and text processing logic from the web routing.
 - **Visualization:** Uses Chart.js for interactive frequency and Zipf's Law distribution charts.
 
-## Getting Started
+## Deployed on Render Free Tier
+[Web Application](https://nlp-zipf-visualiser.onrender.com/)
+
+## Running on local machine
 
 ### Prerequisites
 - Python 3.12+ (tested on 3.12)
